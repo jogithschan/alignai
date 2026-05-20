@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Job {
+  id               String   @id @default(cuid())
+  title            String
+  company          String
+  url              String   @unique
+  description      String
+  alignmentScore   Int?
+  alignmentReason  String?
+  alignmentDetails String?  // JSON: skills/experience/location/role scores, strengths, gaps
+  matchTier        String   @default("MATCH") // MATCH = qualified fit, REVIEW = deep-evaluated below threshold
+  status           String   @default("PENDING") // PENDING, APPLIED, REJECTED
+  resumeId         String?
+  resume           Resume?  @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Resume {
+  id               String   @id @default(cuid())
+  name             String
+  content          String
+  experienceLevels String   @default("[]") // JSON array: intern, entry, mid, senior, staff, lead
+  locations        String   @default("[]") // JSON array of location strings
+  targetRoles      String   @default("[]") // JSON array of role/title keywords to prioritize
+  avoidKeywords    String   @default("[]") // JSON array of keywords to skip
+  isActive         Boolean  @default(false)
+  jobs             Job[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Settings {
+  id         String   @id @default(cuid())
+  targetUrls String   // Comma separated or JSON string of URLs
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ApiUsage {
+  id               String   @id @default(cuid())
+  provider         String   @default("openai")
+  model            String
+  operation        String   // job_extraction, quick_screen, alignment
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  estimatedCostUsd Float
+  scrapeRunId      String?
+  createdAt        DateTime @default(now())
+}
+
+model ScrapeRun {
+  id              String    @id @default(cuid())
+  status          String    @default("running") // running, completed, failed
+  progressMessage String?
+  resultMessage   String?
+  errorMessage    String?
+  startedAt       DateTime  @default(now())
+  finishedAt      DateTime?
+}
