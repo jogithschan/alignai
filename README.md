@@ -115,7 +115,7 @@ cat ~/.ssh/github-personal.pub
 Clone or set remote:
 
 ```bash
-git remote add origin git@github-personal:YOUR_USER/alignai.git
+git remote add origin git@github-personal:jogithschan/alignai.git
 git push -u origin main
 ```
 
